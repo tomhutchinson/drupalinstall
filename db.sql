@@ -1,0 +1,1 @@
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER ON drupal.* TO 'drupaluser'@'localhost' IDENTIFIED BY 'ruUQkEJqxmusaeM';
