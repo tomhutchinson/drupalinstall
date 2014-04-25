@@ -1,0 +1,13 @@
+TMH - Drupal installation scripts for CentOS
+
+WARNING: This script should ONLY be run if PHP, MySQL, and Apache are either not installed or completely clean installs.  If you have already set a root MySQL password, changed Apache configuration, or enabled non-standard PHP plugins, stop now.
+
+Instructions:
+- Be root
+- Make sure git is installed (yum install -y git)
+- Run "git clone https://git.psu.edu/tmh24/ssri-drupal.git"
+- Change directory to "ssri-drupal"
+- Run "./drupal.sh"
+- AND MY AXE
+
+This script has been tested on Centos 6.5, but should work on any version of CentOS or RedHat 6.
