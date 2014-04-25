@@ -30,9 +30,8 @@ service httpd restart
 mv /var/www/html /var/www/html.autobackup
 git clone http://git.drupal.org/project/drupal.git /var/www/html
 cd /var/www/html
+# TODO - Ask for version
 git checkout 7.27
-##git remote rename origin drupal
-##git remote add origin https://git.psu.edu/tmh24/ssri-drupal.git
 
 # Create new user to own Drupal install
 useradd drupal
@@ -65,6 +64,8 @@ service iptables restart
 
 # Add user to drupal group - MAKE THIS CUSTOMIZABLE
 usermod -a -G drupal tmh24
+
+# TODO - Change EnableOverride to All for Clean URLs via .htaccess
 
 
 # Install modules - Security
