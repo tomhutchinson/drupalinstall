@@ -11,3 +11,6 @@ Instructions:
 - AND MY AXE
 
 This script has been tested on Centos 6.5, but should work on any version of CentOS or RedHat 6.
+
+TODO:
+- Apache configuration
