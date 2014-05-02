@@ -17,6 +17,7 @@ service mysqld restart
 # Install PHP and all necessary extensions/plugins
 yum install -y php php-devel php-pear
 yum install -y php-mysql php-dom php-gd php-mbstring
+pecl channel-update pecl.php.net
 pecl install uploadprogress
 echo "extension=uploadprogress.so" >> /etc/php.ini
 
@@ -31,7 +32,7 @@ mv /var/www/html /var/www/html.autobackup
 git clone http://git.drupal.org/project/drupal.git /var/www/html
 cd /var/www/html
 # TODO - Ask for version
-read -p "Enter the Drupal version number you want to install:" REPLY1
+read -p "Enter the Drupal version number you want to install: " REPLY1
 git checkout $REPLY1
 
 # Create new user to own Drupal install
@@ -48,7 +49,7 @@ mysqladmin -u root create drupal
 
 # Create Drupal database user account, install settings file
 mysql -u root < $INSTDIR/db.sql
-cat $INSTDIR/db.inc >> /var/www/html/sites/default/settings.php
+cat "$INSTDIR/db.inc" >> "/var/www/html/sites/default/settings.php"
 chown root:root /var/www/html/sites/default/settings.php
 chmod 644 /var/www/html/sites/default/settings.php
 
