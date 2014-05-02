@@ -71,7 +71,7 @@ service iptables restart
 # Add user to drupal group
 while :
 do
-	read -p "Enter a username to grant access to the Drupal install directory, or DONE when finished: " REPLY2
+	read -p "Enter an OS user that should have access to Drush commands, or DONE when finished: " REPLY2
 	if  [ $REPLY2 == 'DONE' ]
 		then
 			break
