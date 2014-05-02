@@ -61,7 +61,7 @@ drush > /dev/null
 
 # Create the Drupal database
 cd /var/www/html
-drush site-install --db-su=root --account-name=admin --account-pass=admin --site-name="SSRI Drupal Development"
+drush site-install --db-su=root --account-name=admin --account-pass=admin --clean-url=0 --site-name="SSRI Drupal Development"
 
 # Add firewall rules for HTTP/HTTPS
 iptables -I INPUT -p tcp -m tcp --dport 80 -j ACCEPT
