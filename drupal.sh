@@ -26,7 +26,6 @@ yum install -y httpd
 chkconfig httpd on
 service httpd restart
 
-
 # Install Drupal Core
 mv /var/www/html /var/www/html.autobackup
 git clone http://git.drupal.org/project/drupal.git /var/www/html
@@ -49,7 +48,8 @@ mysqladmin -u root create drupal
 
 # Create Drupal database user account, install settings file
 mysql -u root < $INSTDIR/db.sql
-cat "$INSTDIR/db.inc" >> "/var/www/html/sites/default/settings.php"
+cp /var/www/html/sites/default/default.settings.php /var/www/html/sites/default/settings.php
+cat $INSTDIR/db.inc >> /var/www/html/sites/default/settings.php
 chown root:root /var/www/html/sites/default/settings.php
 chmod 644 /var/www/html/sites/default/settings.php
 
@@ -60,7 +60,8 @@ pear install drush/drush
 drush > /dev/null
 
 # Create the Drupal database
-drush sql-create --db-su=root
+cd /var/www/html
+drush site-install --db-su=root --account-name=admin --account-pass=admin --site-name="SSRI Drupal Development"
 
 # Add firewall rules for HTTP/HTTPS
 iptables -I INPUT -p tcp -m tcp --dport 80 -j ACCEPT
@@ -111,5 +112,6 @@ echo "!!!!! IMPORTANT !!!!!"
 echo "Your MySQL installation is currently insecure!"
 echo "Be sure to run /usr/bin/mysql_secure_installation to set a MySQL root password and remove the Test database"
 echo ""
-echo "After that, just visit http://<server>/install.php to finish setting up Drupal User 1"
+echo "You can log into your new Drupal installation with admin/admin."
+echo ""
 
