@@ -3,7 +3,7 @@ NameVirtualHost *:80
 ### Drupal VirtualHost entry
 <VirtualHost *:80>
 	ServerAdmin root@localhost
-	ServerName drupal.local
+	ServerName HOSTNAME
 	ErrorLog logs/drupal-error_log
 	CustomLog logs/drupal-access_log combined
 	DocumentRoot DOCROOT

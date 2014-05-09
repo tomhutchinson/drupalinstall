@@ -7,34 +7,45 @@ INSTDIR=`pwd`
 default_install="/var/www/html"
 read -p "Enter the directory that you want to install Drupal to ($default_install): " REPLY0
 [ -z "$REPLY0"] && REPLY0=$default_install
-echo "Installing Drupal to directory: $REPLY0"
+echo "Will install Drupal to directory: $REPLY0"
 echo ""
 read -p "Enter the Drupal version number you want to install: " REPLY1
-echo "Installing Drupal version: $REPLY1"
+echo "Will install Drupal version: $REPLY1"
+echo ""
+default_hostname="vagrant.local"
+read -p "Enter the hostname of the server ($default_hostname): " REPLY2
+[ -z "$REPLY2"] && REPLY2=$default_hostname
+echo "Hostname will be: $REPLY2"
+echo ""
+
+echo "Installing dependencies, please wait..."
 echo ""
 
 # Install Yum - probably not necessary
-yum install -q -y git
+yum install -y git >> $INSTDIR/install.log
 
 # Install C compiler for make
-yum install -q -y gcc
+yum install -y gcc >> $INSTDIR/install.log
 
 # Install MySQL
-yum install -q -y mysql mysql-server
+yum install -y mysql mysql-server >> $INSTDIR/install.log
 chkconfig mysqld on
-service mysqld restart > $INSTDIR/install.log
+service mysqld restart >> $INSTDIR/install.log
+
 # Install PHP and all necessary extensions/plugins
-yum install -q -y php php-devel php-pear
-yum install -q -y php-mysql php-dom php-gd php-mbstring
+yum install -y php php-devel php-pear >> $INSTDIR/install.log
+yum install -y php-mysql php-dom php-gd php-mbstring >> $INSTDIR/install.log
 pecl channel-update pecl.php.net >> $INSTDIR/install.log
 pecl install uploadprogress >> $INSTDIR/install.log
 echo "extension=uploadprogress.so" >> /etc/php.ini
 
 # Install Apache
-yum install -q -y httpd
+yum install -y httpd >> $INSTDIR/install.log
 chkconfig httpd on
 service httpd restart >> $INSTDIR/install.log
 
+echo "Installing Drupal, please wait..."
+echo ""
 
 # Install Drupal Core
 [ -d $REPLY0 ] && mv $REPLY0 $REPLY0.autobackup
@@ -69,6 +80,7 @@ drush > /dev/null
 
 # Create the Drupal database
 cd $REPLY0
+echo ""
 echo "NOTE: You are about to be prompted to drop your Drupal database table!"
 echo "This is EXPECTED and NORMAL if this is a new install."
 drush site-install --db-su=root --account-name=admin --account-pass=admin --clean-url=1 --site-name="Drupal Development"
@@ -79,41 +91,46 @@ iptables -I INPUT -p tcp -m tcp --dport 443 -j ACCEPT
 service iptables restart >> $INTSDIR/install.log
 
 # Add user to drupal OS group
+echo ""
 while :
 do
-	read -p "Enter an OS user that should have access to Drush commands, or DONE when finished: " REPLY2
-	if  [ $REPLY2 == 'DONE' ]
+	read -p "Enter an OS user that should have access to Drush commands, or DONE when finished: " REPLY3
+	if  [ $REPLY3 == 'DONE' ]
 		then
 			break
 		fi
 		#echo $REPLY
-		usermod -a -G drupal $REPLY2
+		usermod -a -G drupal $REPLY3
 		
 done
 
 # Add Apache VirtualHost for new install
 /bin/sed -i 's@DOCROOT@'$REPLY0'@g' $INSTDIR/vhost.inc
+/bin/sed -i 's@HOSTNAME@'$REPLY2'@g' $INSTDIR/vhost.inc
 cat $INSTDIR/vhost.inc >> /etc/httpd/conf/httpd.conf
-service httpd restart
+service httpd restart >> $INSTDIR/install.log
+
+echo "Installing modules, please wait..."
+echo ""
 
 # Install modules - Security
 cd $REPLY0
-drush dl security_review
-drush en -y security_review
-drush dl flood_control
-drush en -y flood_control
+drush dl security_review >> $INSTDIR/install.log
+drush en -y security_review >> $INSTDIR/install.log
+drush dl flood_control >> $INSTDIR/install.log
+drush en -y flood_control >> $INSTDIR/install.log
 
 # Install modules - Other
 cd $REPLY0
-drush dl views
-drush en -y views
-drush dl features
-drush en -y features
-drush dl module_filter
-drush en -y module_filter
-drush dl pathauto
-drush en -y pathauto
-drush dl site_audit
+drush dl views >> $INSTDIR/install.log
+drush en -y views >> $INSTDIR/install.log
+drush dl features >> $INSTDIR/install.log
+drush en -y features >> $INSTDIR/install.log
+drush dl module_filter >> $INSTDIR/install.log
+drush en -y module_filter >> $INSTDIR/install.log
+drush dl pathauto >> $INSTDIR/install.log
+drush en -y pathauto >> $INSTDIR/install.log
+drush dl site_audit >> $INSTDIR/install.log
 
 
 # Done, give feedback
@@ -121,9 +138,8 @@ echo ""
 echo "All Done!"
 echo ""
 echo "!!!!! IMPORTANT !!!!!"
-echo "Your MySQL installation is currently insecure!"
+echo "Your MySQL installation is currently INSECURE!"
 echo "Be sure to run /usr/bin/mysql_secure_installation to set a MySQL root password and remove the Test database"
 echo ""
 echo "You can log into your new Drupal installation with admin/admin."
 echo ""
-
