@@ -87,6 +87,7 @@ do
 done
 
 # TODO - Change EnableOverride to All for Clean URLs via .htaccess
+/bin/sed -i 's/DOCROOT/$REPLY1/g' $INSTDIR/vhost.inc
 cat $INSTDIR/vhost.inc >> /etc/httpd/conf/httpd.conf
 service httpd restart
 
