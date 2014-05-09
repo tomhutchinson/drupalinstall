@@ -12,6 +12,6 @@ NameVirtualHost *:80
 		RewriteCond %{REQUEST_FILENAME} !-f
 		RewriteCond %{REQUEST_FILENAME} !-d
 		RewriteRule ^(.*)$ index.php?q=$1 [L,QSA]
-		EnableOverride All
+		AllowOverride All
 	</Directory>
 </VirtualHost>

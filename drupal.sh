@@ -26,23 +26,23 @@ yum install -y httpd
 chkconfig httpd on
 service httpd restart
 
+# Ask for install location
 default_install="/var/www/html"
 read -p "Enter the directory that you want to install Drupal ($default_install): " REPLY0
 [ -z "$REPLY0"] && REPLY0=$default_install
-feedback "Installing Drupal to directory: $REPLY0"
+echo "Installing Drupal to directory: $REPLY0"
 
 # Install Drupal Core
-mv $REPLY0 $REPLY0.autobackup
+[-d $REPLY0 ] && mv $REPLY0 $REPLY0.autobackup
 git clone http://git.drupal.org/project/drupal.git $REPLY0
 cd $REPLY0
-# TODO - Ask for version
 read -p "Enter the Drupal version number you want to install: " REPLY1
 git checkout $REPLY1
 
-# Create new user to own Drupal install
+# Create new user to own the Drupal install
 useradd drupal
 chown -R drupal:drupal $REPLY0
-chown drupal:drupal $REPLY0.htaccess
+chown drupal:drupal $REPLY0/.htaccess
 mkdir $REPLY0/sites/default/files
 chown apache:apache $REPLY0/sites/default/files
 chmod -R 755 $REPLY0/sites/all/modules
@@ -58,7 +58,7 @@ cat $INSTDIR/db.inc >> $REPLY0/sites/default/settings.php
 chown root:root $REPLY0/sites/default/settings.php
 chmod 644 $REPLY0/sites/default/settings.php
 
-# Install Drush
+# Install and bootstrap Drush
 cd $REPLY0
 pear channel-discover pear.drush.org
 pear install drush/drush
@@ -66,6 +66,8 @@ drush > /dev/null
 
 # Create the Drupal database
 cd $REPLY0
+echo "NOTE: You are about to be prompted to drop your Drupal database table!"
+echo "This is EXPECTED and NORMAL if this is a new install."
 drush site-install --db-su=root --account-name=admin --account-pass=admin --clean-url=0 --site-name="Drupal Development"
 
 # Add firewall rules for HTTP/HTTPS
@@ -73,7 +75,7 @@ iptables -I INPUT -p tcp -m tcp --dport 80 -j ACCEPT
 iptables -I INPUT -p tcp -m tcp --dport 443 -j ACCEPT
 service iptables restart
 
-# Add user to drupal group
+# Add user to drupal OS group
 while :
 do
 	read -p "Enter an OS user that should have access to Drush commands, or DONE when finished: " REPLY2
@@ -86,8 +88,8 @@ do
 		
 done
 
-# TODO - Change EnableOverride to All for Clean URLs via .htaccess
-/bin/sed -i 's/DOCROOT/$REPLY1/g' $INSTDIR/vhost.inc
+# Add Apache VirtualHost for new install
+/bin/sed -i 's/DOCROOT/'$REPLY0'/g' $INSTDIR/vhost.inc
 cat $INSTDIR/vhost.inc >> /etc/httpd/conf/httpd.conf
 service httpd restart
 
