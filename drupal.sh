@@ -4,31 +4,31 @@
 INSTDIR=`pwd`
 
 # Install Yum - probably not necessary
-yum install -y git
+yum install -q -y git
 
 # Install C compiler for make
-yum install -y gcc
+yum install -q -y gcc
 
 # Install MySQL
-yum install -y mysql mysql-server
+yum install -q -y mysql mysql-server
 chkconfig mysqld on
 service mysqld restart
 
 # Install PHP and all necessary extensions/plugins
-yum install -y php php-devel php-pear
-yum install -y php-mysql php-dom php-gd php-mbstring
+yum install -q -y php php-devel php-pear
+yum install -q -y php-mysql php-dom php-gd php-mbstring
 pecl channel-update pecl.php.net
 pecl install uploadprogress
 echo "extension=uploadprogress.so" >> /etc/php.ini
 
 # Install Apache
-yum install -y httpd
+yum install -q -y httpd
 chkconfig httpd on
 service httpd restart
 
 # Ask for install location
 default_install="/var/www/html"
-read -p "Enter the directory that you want to install Drupal ($default_install): " REPLY0
+read -p "Enter the directory that you want to install Drupal to ($default_install): " REPLY0
 [ -z "$REPLY0"] && REPLY0=$default_install
 echo "Installing Drupal to directory: $REPLY0"
 
