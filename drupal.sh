@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Check for Root
+if [ "$(id -u)" != "0" ]; then
+		feedback "This script must be run as root!"
+		exit 1
+fi
+
 # Get current install directory of the script
 INSTDIR=`pwd`
 
@@ -9,20 +15,22 @@ echo "Drupal Setup Script - Version 1"
 echo "WARNING - If you specify the name of an existing MySQL database below, IT WILL BE DROPPED!"
 echo ""
 default_install="/var/www/html"
-read -p "Enter the directory that you want to install Drupal to ($default_install): " REPLY0
+read -p "Enter the directory that you want to install Drupal to [$default_install]: " REPLY0
 [ -z "$REPLY0" ] && REPLY0=$default_install
 echo "Will install Drupal to directory: $REPLY0"
 echo ""
-read -p "Enter the Drupal version number you want to install: " REPLY1
+default_version="7.00"
+read -p "Enter the Drupal version number you want to install [$default_version]: " REPLY1
+[ -z "$REPLY1" ] && REPLY1=$default_version
 echo "Will install Drupal version: $REPLY1"
 echo ""
 default_hostname="vagrant.local"
-read -p "Enter the hostname of the server ($default_hostname): " REPLY2
+read -p "Enter the hostname of the server [$default_hostname]: " REPLY2
 [ -z "$REPLY2" ] && REPLY2=$default_hostname
 echo "Hostname will be: $REPLY2"
 echo ""
 default_database="drupal"
-read -p "Enter the Drupal database name you want to use ($default_database): " REPLY3
+read -p "Enter the Drupal database name you want to use [$default_database]: " REPLY3
 [ -z "$REPLY3" ] && REPLY3=$default_database
 echo "Database will be: $REPLY3"
 echo ""
