@@ -26,42 +26,47 @@ yum install -y httpd
 chkconfig httpd on
 service httpd restart
 
+default_install="/var/www/html"
+read -p "Enter the directory that you want to install Drupal ($default_install): " REPLY0
+[ -z "$REPLY0"] && REPLY0=$default_install
+feedback "Installing Drupal to directory: $REPLY0"
+
 # Install Drupal Core
-mv /var/www/html /var/www/html.autobackup
-git clone http://git.drupal.org/project/drupal.git /var/www/html
-cd /var/www/html
+mv $REPLY0 $REPLY0.autobackup
+git clone http://git.drupal.org/project/drupal.git $REPLY0
+cd $REPLY0
 # TODO - Ask for version
 read -p "Enter the Drupal version number you want to install: " REPLY1
 git checkout $REPLY1
 
 # Create new user to own Drupal install
 useradd drupal
-chown -R drupal:drupal /var/www/html
-chown drupal:drupal /var/www/html/.htaccess
-mkdir /var/www/html/sites/default/files
-chown apache:apache /var/www/html/sites/default/files
-chmod -R 755 /var/www/html/sites/all/modules
-chmod -R 755 /var/www/html/sites/all/themes
+chown -R drupal:drupal $REPLY0
+chown drupal:drupal $REPLY0.htaccess
+mkdir $REPLY0/sites/default/files
+chown apache:apache $REPLY0/sites/default/files
+chmod -R 755 $REPLY0/sites/all/modules
+chmod -R 755 $REPLY0/sites/all/themes
 
 # Create database
 mysqladmin -u root create drupal
 
 # Create Drupal database user account, install settings file
 mysql -u root < $INSTDIR/db.sql
-cp /var/www/html/sites/default/default.settings.php /var/www/html/sites/default/settings.php
-cat $INSTDIR/db.inc >> /var/www/html/sites/default/settings.php
-chown root:root /var/www/html/sites/default/settings.php
-chmod 644 /var/www/html/sites/default/settings.php
+cp $REPLY0/sites/default/default.settings.php $REPLY0/sites/default/settings.php
+cat $INSTDIR/db.inc >> $REPLY0/sites/default/settings.php
+chown root:root $REPLY0/sites/default/settings.php
+chmod 644 $REPLY0/sites/default/settings.php
 
 # Install Drush
-cd /var/www/html
+cd $REPLY0
 pear channel-discover pear.drush.org
 pear install drush/drush
 drush > /dev/null
 
 # Create the Drupal database
-cd /var/www/html
-drush site-install --db-su=root --account-name=admin --account-pass=admin --clean-url=0 --site-name="SSRI Drupal Development"
+cd $REPLY0
+drush site-install --db-su=root --account-name=admin --account-pass=admin --clean-url=0 --site-name="Drupal Development"
 
 # Add firewall rules for HTTP/HTTPS
 iptables -I INPUT -p tcp -m tcp --dport 80 -j ACCEPT
@@ -82,17 +87,18 @@ do
 done
 
 # TODO - Change EnableOverride to All for Clean URLs via .htaccess
-
+cat $INSTDIR/vhost.inc >> /etc/httpd/conf/httpd.conf
+service httpd restart
 
 # Install modules - Security
-cd /var/www/html
+cd $REPLY0
 drush dl security_review
 drush en -y security_review
 drush dl flood_control
 drush en -y flood_control
 
 # Install modules - Other
-cd /var/www/html
+cd $REPLY0
 drush dl views
 drush en -y views
 drush dl features
