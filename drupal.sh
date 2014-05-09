@@ -3,10 +3,14 @@
 # Get current install directory of the script
 INSTDIR=`pwd`
 
-# Ask for install location
+# Ask for install information
+echo ""
+echo "Drupal Setup Script - Version 1"
+echo "WARNING - If you specify the name of an existing MySQL database below, IT WILL BE DROPPED!"
+echo ""
 default_install="/var/www/html"
 read -p "Enter the directory that you want to install Drupal to ($default_install): " REPLY0
-[ -z "$REPLY0"] && REPLY0=$default_install
+[ -z "$REPLY0" ] && REPLY0=$default_install
 echo "Will install Drupal to directory: $REPLY0"
 echo ""
 read -p "Enter the Drupal version number you want to install: " REPLY1
@@ -14,10 +18,16 @@ echo "Will install Drupal version: $REPLY1"
 echo ""
 default_hostname="vagrant.local"
 read -p "Enter the hostname of the server ($default_hostname): " REPLY2
-[ -z "$REPLY2"] && REPLY2=$default_hostname
+[ -z "$REPLY2" ] && REPLY2=$default_hostname
 echo "Hostname will be: $REPLY2"
 echo ""
+default_database="drupal"
+read -p "Enter the Drupal database name you want to use ($default_database): " REPLY3
+[ -z "$REPLY3" ] && REPLY3=$default_database
+echo "Database will be: $REPLY3"
+echo ""
 
+echo ""
 echo "Installing dependencies, please wait..."
 echo ""
 
@@ -37,21 +47,26 @@ yum install -y php php-devel php-pear >> $INSTDIR/install.log
 yum install -y php-mysql php-dom php-gd php-mbstring >> $INSTDIR/install.log
 pecl channel-update pecl.php.net >> $INSTDIR/install.log
 pecl install uploadprogress >> $INSTDIR/install.log
-echo "extension=uploadprogress.so" >> /etc/php.ini
+if [ grep extension=uploadprogress.so /etc/php.ini ]; then
+	break
+else
+	echo "extension=uploadprogress.so" >> /etc/php.ini
+fi
 
 # Install Apache
 yum install -y httpd >> $INSTDIR/install.log
 chkconfig httpd on
 service httpd restart >> $INSTDIR/install.log
 
+echo ""
 echo "Installing Drupal, please wait..."
 echo ""
 
 # Install Drupal Core
 [ -d $REPLY0 ] && mv $REPLY0 $REPLY0.autobackup
-git clone http://git.drupal.org/project/drupal.git $REPLY0
+git clone http://git.drupal.org/project/drupal.git $REPLY0 >> $INSTDIR/install.log
 cd $REPLY0
-git checkout $REPLY1
+git checkout $REPLY1 >> $INSTDIR/install.log
 
 # Create new user to own the Drupal install
 useradd drupal
@@ -62,10 +77,13 @@ chown apache:apache $REPLY0/sites/default/files
 chmod -R 755 $REPLY0/sites/all/modules
 chmod -R 755 $REPLY0/sites/all/themes
 
-# Create database
-mysqladmin -u root create drupal
+# Backup existing database, Create database
+mysqldump -u root $REPLY3 >> $INSTDIR/existing_db_dump.sql
+mysqladmin -u root create $REPLY3 >> $INSTDIR/install.log
 
 # Create Drupal database user account, install settings file
+/bin/sed -i 's@DBNAME@'$REPLY3'@g' $INSTDIR/db.inc
+/bin/sed -i 's@DBNAME@'$REPLY3'@g' $INSTDIR/db.sql
 mysql -u root < $INSTDIR/db.sql
 cp $REPLY0/sites/default/default.settings.php $REPLY0/sites/default/settings.php
 cat $INSTDIR/db.inc >> $REPLY0/sites/default/settings.php
@@ -83,6 +101,7 @@ cd $REPLY0
 echo ""
 echo "NOTE: You are about to be prompted to drop your Drupal database table!"
 echo "This is EXPECTED and NORMAL if this is a new install."
+echo ""
 drush site-install --db-su=root --account-name=admin --account-pass=admin --clean-url=1 --site-name="Drupal Development"
 
 # Add firewall rules for HTTP/HTTPS
@@ -94,13 +113,13 @@ service iptables restart >> $INTSDIR/install.log
 echo ""
 while :
 do
-	read -p "Enter an OS user that should have access to Drush commands, or DONE when finished: " REPLY3
-	if  [ $REPLY3 == 'DONE' ]
+	read -p "Enter an OS user that should have access to Drush commands, or DONE when finished: " REPLY4
+	if  [ $REPLY4 == 'DONE' ]
 		then
 			break
 		fi
 		#echo $REPLY
-		usermod -a -G drupal $REPLY3
+		usermod -a -G drupal $REPLY4
 		
 done
 
@@ -110,6 +129,7 @@ done
 cat $INSTDIR/vhost.inc >> /etc/httpd/conf/httpd.conf
 service httpd restart >> $INSTDIR/install.log
 
+echo ""
 echo "Installing modules, please wait..."
 echo ""
 
@@ -139,7 +159,7 @@ echo "All Done!"
 echo ""
 echo "!!!!! IMPORTANT !!!!!"
 echo "Your MySQL installation is currently INSECURE!"
-echo "Be sure to run /usr/bin/mysql_secure_installation to set a MySQL root password and remove the Test database"
+echo "Be sure to run /usr/bin/mysql_secure_installation to set a MySQL root password and remove the Test database."
 echo ""
 echo "You can log into your new Drupal installation with admin/admin."
 echo ""

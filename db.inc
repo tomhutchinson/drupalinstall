@@ -3,7 +3,7 @@ $databases = array(
 	array (
 		'default' =>
 		array (
-			'database' => 'drupal',
+			'database' => 'DBNAME',
 			'username' => 'drupaluser',
 			'password' => '9z4b5e9pruUQkEJqxmusaeM',
 			'host' => 'localhost',
