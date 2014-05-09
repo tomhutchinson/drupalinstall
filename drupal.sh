@@ -3,6 +3,16 @@
 # Get current install directory of the script
 INSTDIR=`pwd`
 
+# Ask for install location
+default_install="/var/www/html"
+read -p "Enter the directory that you want to install Drupal to ($default_install): " REPLY0
+[ -z "$REPLY0"] && REPLY0=$default_install
+echo "Installing Drupal to directory: $REPLY0"
+echo ""
+read -p "Enter the Drupal version number you want to install: " REPLY1
+echo "Installing Drupal version: $REPLY1"
+echo ""
+
 # Install Yum - probably not necessary
 yum install -q -y git
 
@@ -12,31 +22,24 @@ yum install -q -y gcc
 # Install MySQL
 yum install -q -y mysql mysql-server
 chkconfig mysqld on
-service mysqld restart
-
+service mysqld restart > $INSTDIR/install.log
 # Install PHP and all necessary extensions/plugins
 yum install -q -y php php-devel php-pear
 yum install -q -y php-mysql php-dom php-gd php-mbstring
-pecl channel-update pecl.php.net
-pecl install uploadprogress
+pecl channel-update pecl.php.net >> $INSTDIR/install.log
+pecl install uploadprogress >> $INSTDIR/install.log
 echo "extension=uploadprogress.so" >> /etc/php.ini
 
 # Install Apache
 yum install -q -y httpd
 chkconfig httpd on
-service httpd restart
+service httpd restart >> $INSTDIR/install.log
 
-# Ask for install location
-default_install="/var/www/html"
-read -p "Enter the directory that you want to install Drupal to ($default_install): " REPLY0
-[ -z "$REPLY0"] && REPLY0=$default_install
-echo "Installing Drupal to directory: $REPLY0"
 
 # Install Drupal Core
-[-d $REPLY0 ] && mv $REPLY0 $REPLY0.autobackup
+[ -d $REPLY0 ] && mv $REPLY0 $REPLY0.autobackup
 git clone http://git.drupal.org/project/drupal.git $REPLY0
 cd $REPLY0
-read -p "Enter the Drupal version number you want to install: " REPLY1
 git checkout $REPLY1
 
 # Create new user to own the Drupal install
@@ -60,20 +63,20 @@ chmod 644 $REPLY0/sites/default/settings.php
 
 # Install and bootstrap Drush
 cd $REPLY0
-pear channel-discover pear.drush.org
-pear install drush/drush
+pear channel-discover pear.drush.org >> $INSTDIR/install.log
+pear install drush/drush >> $INSTDIR/install.log
 drush > /dev/null
 
 # Create the Drupal database
 cd $REPLY0
 echo "NOTE: You are about to be prompted to drop your Drupal database table!"
 echo "This is EXPECTED and NORMAL if this is a new install."
-drush site-install --db-su=root --account-name=admin --account-pass=admin --clean-url=0 --site-name="Drupal Development"
+drush site-install --db-su=root --account-name=admin --account-pass=admin --clean-url=1 --site-name="Drupal Development"
 
 # Add firewall rules for HTTP/HTTPS
 iptables -I INPUT -p tcp -m tcp --dport 80 -j ACCEPT
 iptables -I INPUT -p tcp -m tcp --dport 443 -j ACCEPT
-service iptables restart
+service iptables restart >> $INTSDIR/install.log
 
 # Add user to drupal OS group
 while :
@@ -89,7 +92,7 @@ do
 done
 
 # Add Apache VirtualHost for new install
-/bin/sed -i 's/DOCROOT/'$REPLY0'/g' $INSTDIR/vhost.inc
+/bin/sed -i 's@DOCROOT@'$REPLY0'@g' $INSTDIR/vhost.inc
 cat $INSTDIR/vhost.inc >> /etc/httpd/conf/httpd.conf
 service httpd restart
 
