@@ -47,9 +47,7 @@ yum install -y php php-devel php-pear >> $INSTDIR/install.log
 yum install -y php-mysql php-dom php-gd php-mbstring >> $INSTDIR/install.log
 pecl channel-update pecl.php.net >> $INSTDIR/install.log
 pecl install uploadprogress >> $INSTDIR/install.log
-if [ grep extension=uploadprogress.so /etc/php.ini ]; then
-	break
-else
+if ! grep -q extension=uploadprogress.so /etc/php.ini; then
 	echo "extension=uploadprogress.so" >> /etc/php.ini
 fi
 
@@ -64,9 +62,9 @@ echo ""
 
 # Install Drupal Core
 [ -d $REPLY0 ] && mv $REPLY0 $REPLY0.autobackup
-git clone http://git.drupal.org/project/drupal.git $REPLY0 >> $INSTDIR/install.log
+git clone http://git.drupal.org/project/drupal.git $REPLY0 -q >> $INSTDIR/install.log
 cd $REPLY0
-git checkout $REPLY1 >> $INSTDIR/install.log
+git checkout $REPLY1 -q >> $INSTDIR/install.log
 
 # Create new user to own the Drupal install
 useradd drupal
@@ -78,7 +76,7 @@ chmod -R 755 $REPLY0/sites/all/modules
 chmod -R 755 $REPLY0/sites/all/themes
 
 # Backup existing database, Create database
-mysqldump -u root $REPLY3 >> $INSTDIR/existing_db_dump.sql
+mysqldump -f -u root $REPLY3 >> $INSTDIR/existing_db_dump.sql
 mysqladmin -u root create $REPLY3 >> $INSTDIR/install.log
 
 # Create Drupal database user account, install settings file
@@ -135,22 +133,22 @@ echo ""
 
 # Install modules - Security
 cd $REPLY0
-drush dl security_review >> $INSTDIR/install.log
-drush en -y security_review >> $INSTDIR/install.log
-drush dl flood_control >> $INSTDIR/install.log
-drush en -y flood_control >> $INSTDIR/install.log
+drush dl -q -y security_review >> $INSTDIR/install.log
+drush en -q -y security_review >> $INSTDIR/install.log
+drush dl -q -y flood_control >> $INSTDIR/install.log
+drush en -q -y flood_control >> $INSTDIR/install.log
 
 # Install modules - Other
 cd $REPLY0
-drush dl views >> $INSTDIR/install.log
-drush en -y views >> $INSTDIR/install.log
-drush dl features >> $INSTDIR/install.log
-drush en -y features >> $INSTDIR/install.log
-drush dl module_filter >> $INSTDIR/install.log
-drush en -y module_filter >> $INSTDIR/install.log
-drush dl pathauto >> $INSTDIR/install.log
-drush en -y pathauto >> $INSTDIR/install.log
-drush dl site_audit >> $INSTDIR/install.log
+drush dl -q -y views >> $INSTDIR/install.log
+drush en -q -y views >> $INSTDIR/install.log
+drush dl -q -y features >> $INSTDIR/install.log
+drush en -q -y features >> $INSTDIR/install.log
+drush dl -q -y module_filter >> $INSTDIR/install.log
+drush en -q -y module_filter >> $INSTDIR/install.log
+drush dl -q -y pathauto >> $INSTDIR/install.log
+drush en -q -y pathauto >> $INSTDIR/install.log
+drush dl -q -y site_audit >> $INSTDIR/install.log
 
 
 # Done, give feedback
