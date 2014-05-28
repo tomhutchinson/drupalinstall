@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# Script help
+if [ "$1" == "-h" ]; then
+	echo ""
+	echo "SSRI Drupal installation and setup script"
+	echo ""
+	echo "Interactive install: drupal.sh"
+	echo "Non-interactive install: drupal.sh -n [install directory] [Drupal version] [hostname] [database name]"
+	echo "Silent install: drupal.sh -s"
+	echo "This help page: drupal.sh -h"
+	echo ""
+	exit 0
+fi
+
 # Check for Root
 if [ "$(id -u)" != "0" ]; then
 		feedback "This script must be run as root!"
@@ -9,28 +22,49 @@ fi
 # Get current install directory of the script
 INSTDIR=`pwd`
 
+# Get non-interactive options
+if [ "$1" == "-n" ]; then
+	REPLY0=$2
+	REPLY1=$3
+	REPLY2=$4
+	REPLY3=$5
+fi
+
 # Ask for install information
 echo ""
 echo "Drupal Setup Script - Version 1"
-echo "WARNING - If you specify the name of an existing MySQL database below, IT WILL BE DROPPED!"
+echo "WARNING - This script assumes that you have a new install of Apache, MySQL, and PHP."
+echo "If you specify a database name that already exists, IT WILL BE DROPPED!  You have been warned!"
 echo ""
+
 default_install="/var/www/html"
-read -p "Enter the directory that you want to install Drupal to [$default_install]: " REPLY0
+if [ "$1" != "-s" ] && [ "$1" != "-n" ]; then
+	read -p "Enter the directory that you want to install Drupal to [$default_install]: " REPLY0
+fi
 [ -z "$REPLY0" ] && REPLY0=$default_install
 echo "Will install Drupal to directory: $REPLY0"
+
 echo ""
 default_version="7.00"
-read -p "Enter the Drupal version number you want to install [$default_version]: " REPLY1
+if [ "$1" != "-s" ] && [ "$1" != "-n" ]; then
+	read -p "Enter the Drupal version number you want to install [$default_version]: " REPLY1
+fi
 [ -z "$REPLY1" ] && REPLY1=$default_version
 echo "Will install Drupal version: $REPLY1"
+
 echo ""
 default_hostname="vagrant.local"
-read -p "Enter the hostname of the server [$default_hostname]: " REPLY2
+if [ "$1" != "-s" ] && [ "$1" != "-n" ]; then
+	read -p "Enter the hostname of the server [$default_hostname]: " REPLY2
+fi
 [ -z "$REPLY2" ] && REPLY2=$default_hostname
 echo "Hostname will be: $REPLY2"
+
 echo ""
 default_database="drupal"
-read -p "Enter the Drupal database name you want to use [$default_database]: " REPLY3
+if [ "$1" != "-s" ] && [ "$1" != "-n" ]; then
+	read -p "Enter the Drupal database name you want to use [$default_database]: " REPLY3
+fi
 [ -z "$REPLY3" ] && REPLY3=$default_database
 echo "Database will be: $REPLY3"
 echo ""
@@ -41,6 +75,9 @@ echo ""
 
 # Install Yum - probably not necessary
 yum install -y git >> $INSTDIR/install.log
+
+# Install Which - may be needed for drush
+yum install -y which >> $INSTDIR/install.log
 
 # Install C compiler for make
 yum install -y gcc >> $INSTDIR/install.log
@@ -84,7 +121,8 @@ chmod -R 755 $REPLY0/sites/all/modules
 chmod -R 755 $REPLY0/sites/all/themes
 
 # Backup existing database, Create database
-mysqldump -f -u root $REPLY3 >> $INSTDIR/existing_db_dump.sql
+# Note - skip the backup for now, it creates a confuing error message
+# mysqldump -f -u root $REPLY3 >> $INSTDIR/existing_db_dump.sql
 mysqladmin -u root create $REPLY3 >> $INSTDIR/install.log
 
 # Create Drupal database user account, install settings file
@@ -109,6 +147,8 @@ echo "NOTE: You are about to be prompted to drop your Drupal database table!"
 echo "This is EXPECTED and NORMAL if this is a new install."
 echo ""
 drush site-install --db-su=root --account-name=admin --account-pass=admin --clean-url=1 --site-name="Drupal Development"
+
+# TODO - Check for iptables running, and don't add rules if it's not
 
 # Add firewall rules for HTTP/HTTPS
 iptables -I INPUT -p tcp -m tcp --dport 80 -j ACCEPT
