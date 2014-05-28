@@ -10,7 +10,9 @@ Instructions:
 - Run "./drupal.sh"
 - AND MY AXE
 
+You can do an unattended (not-so-)silent install by running "./drupal.sh -s"
+
 This script has been tested on Centos 6.5, but should work on any version of CentOS or RedHat 6.
 
 TODO:
-- Apache configuration
+- Use https://github.com/h5bp/server-configs-apache as a base Apache installation
