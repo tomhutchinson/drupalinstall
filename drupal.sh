@@ -37,7 +37,7 @@ fi
 # Ask for install information
 echo ""
 echo "Drupal Setup Script - Version 1"
-echo "WARNING - This script assumes that you have a new install of Apache, MySQL, and PHP."
+echo "WARNING - This script assumes that you have a new or non-existing install of Apache, MySQL, and PHP."
 echo "If you specify a database name that already exists, IT WILL BE DROPPED!  You have been warned!"
 echo ""
 
@@ -105,6 +105,12 @@ yum install -y httpd >> $INSTDIR/install.log
 chkconfig httpd on
 service httpd restart >> $INSTDIR/install.log
 
+# Install Apache Boilerplate
+git clone https://github.com/h5bp/server-configs-apache
+cd server-configs-apache
+cat ./.htaccess >> /etc/httpd/conf/httpd.conf
+service httpd restart >> $INSTDIR/install.log
+
 echo ""
 echo "Installing Drupal, please wait..."
 echo ""
@@ -146,11 +152,7 @@ drush > /dev/null
 
 # Create the Drupal database
 cd $REPLY0
-echo ""
-echo "NOTE: You are about to be prompted to drop your Drupal database table!"
-echo "This is EXPECTED and NORMAL if this is a new install."
-echo ""
-drush site-install --db-su=root --account-name=admin --account-pass=admin --clean-url=1 --site-name="Drupal Development"
+drush site-install -y --db-su=root --account-name=admin --account-pass=admin --clean-url=1 --site-name="Drupal Development"
 
 # TODO - Check for iptables running, and don't add rules if it's not
 
