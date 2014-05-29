@@ -28,6 +28,9 @@ if [ "$1" == "-n" ]; then
 	REPLY1=$3
 	REPLY2=$4
 	REPLY3=$5
+fi
+
+if [ "$1" == "-n" ] || [ "$1" == "-s" ]; then
 	REPLY4="DONE"
 fi
 
@@ -160,12 +163,13 @@ service iptables restart >> $INTSDIR/install.log
 echo ""
 while :
 do
-	read -p "Enter an OS user that should have access to Drush commands, or DONE when finished: " REPLY4
+	if [ "$1" != "-s" ] && [ "$1" != "-n" ]; then
+		read -p "Enter an OS user that should have access to Drush commands, or DONE when finished: " REPLY4
+	fi
 	if  [ $REPLY4 == 'DONE' ]
 		then
 			break
 		fi
-		#echo $REPLY
 		usermod -a -G drupal $REPLY4
 		
 done
