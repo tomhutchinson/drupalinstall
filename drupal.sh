@@ -28,6 +28,7 @@ if [ "$1" == "-n" ]; then
 	REPLY1=$3
 	REPLY2=$4
 	REPLY3=$5
+	REPLY4="DONE"
 fi
 
 # Ask for install information
@@ -45,7 +46,7 @@ fi
 echo "Will install Drupal to directory: $REPLY0"
 
 echo ""
-default_version="7.00"
+default_version="7.28"
 if [ "$1" != "-s" ] && [ "$1" != "-n" ]; then
 	read -p "Enter the Drupal version number you want to install [$default_version]: " REPLY1
 fi
