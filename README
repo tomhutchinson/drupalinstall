@@ -5,7 +5,7 @@ WARNING: This script should ONLY be run if PHP, MySQL, and Apache are either not
 Instructions:
 - Be root
 - Make sure git is installed (yum install -y git)
-- Run "git clone https://git.psu.edu/tmh24/ssri-drupal.git"
+- Run "git clone https://github.com/tomhutchinson/drupalinstall"
 - Change directory to "ssri-drupal"
 - Run "./drupal.sh"
 
