@@ -6,9 +6,12 @@ Instructions:
 - Be root
 - Make sure git is installed (yum install -y git)
 - Run "git clone https://github.com/tomhutchinson/drupalinstall"
-- Change directory to "ssri-drupal"
+- Change directory to "drupalinstall"
 - Run "./drupal.sh"
 
-You can do an unattended (not-so-)silent install by running "./drupal.sh -s".
+Automatic (not-so-)silent install: "./drupal.sh -s"
+Unattended install: "./drupal.sh -n [install directory] [Drupal version] [DNS hostname] [database name]"
+Help: "./drupal.sh -h"
+
 
 This script has been tested on Centos 6.5, but should work on any version of CentOS or RedHat 6.

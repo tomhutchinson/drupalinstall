@@ -6,7 +6,7 @@ if [ "$1" == "-h" ]; then
 	echo "SSRI Drupal installation and setup script"
 	echo ""
 	echo "Interactive install: drupal.sh"
-	echo "Non-interactive install: drupal.sh -n [install directory] [Drupal version] [hostname] [database name]"
+	echo "Non-interactive install: drupal.sh -n [install directory] [Drupal version] [DNS hostname] [database name]"
 	echo "Silent install: drupal.sh -s"
 	echo "This help page: drupal.sh -h"
 	echo ""
@@ -57,9 +57,9 @@ fi
 echo "Will install Drupal version: $REPLY1"
 
 echo ""
-default_hostname="vagrant.local"
+default_hostname="drupal.local"
 if [ "$1" != "-s" ] && [ "$1" != "-n" ]; then
-	read -p "Enter the hostname of the server [$default_hostname]: " REPLY2
+	read -p "Enter the DNS hostname of the server [$default_hostname]: " REPLY2
 fi
 [ -z "$REPLY2" ] && REPLY2=$default_hostname
 echo "Hostname will be: $REPLY2"
@@ -85,6 +85,9 @@ yum install -y which >> $INSTDIR/install.log
 
 # Install C compiler for make
 yum install -y gcc >> $INSTDIR/install.log
+
+# Install pwmake to generate random MySQL password
+yum install -y pwgen >> $INSTDIR/install.log
 
 # Install MySQL
 yum install -y mysql mysql-server >> $INSTDIR/install.log
@@ -136,8 +139,12 @@ chmod -R 755 $REPLY0/sites/all/themes
 mysqladmin -u root create $REPLY3 >> $INSTDIR/install.log
 
 # Create Drupal database user account, install settings file
+RANDOMPASS=`pwgen -c -n -1 16`
+echo $RANDOMPASS > $INSTDIR/drupal_database_password.txt
 /bin/sed -i 's@DBNAME@'$REPLY3'@g' $INSTDIR/db.inc
 /bin/sed -i 's@DBNAME@'$REPLY3'@g' $INSTDIR/db.sql
+/bin/sed -i 's@DBPASS@'$RANDOMPASS'@g' $INSTDIR/db.inc
+/bin/sed -i 's@DBPASS@'$RANDOMPASS'@g' $INSTDIR/db.sql
 mysql -u root < $INSTDIR/db.sql
 cp $REPLY0/sites/default/default.settings.php $REPLY0/sites/default/settings.php
 cat $INSTDIR/db.inc >> $REPLY0/sites/default/settings.php
@@ -192,6 +199,8 @@ drush dl -q -y security_review >> $INSTDIR/install.log
 drush en -q -y security_review >> $INSTDIR/install.log
 drush dl -q -y flood_control >> $INSTDIR/install.log
 drush en -q -y flood_control >> $INSTDIR/install.log
+drush dl -q -y hacked >> $INSTDIR/install.log
+drush en -q -y hacked >> $INSTDIR/install.log
 
 # Install modules - Other
 cd $REPLY0
@@ -214,5 +223,5 @@ echo "!!!!! IMPORTANT !!!!!"
 echo "Your MySQL installation is currently INSECURE!"
 echo "Be sure to run /usr/bin/mysql_secure_installation to set a MySQL root password and remove the Test database."
 echo ""
-echo "You can log into your new Drupal installation with admin/admin."
+echo "You can log into your new Drupal installation at http://localhost with admin/admin."
 echo ""

@@ -5,7 +5,7 @@ $databases = array(
 		array (
 			'database' => 'DBNAME',
 			'username' => 'drupaluser',
-			'password' => '9z4b5e9pruUQkEJqxmusaeM',
+			'password' => 'DBPASS',
 			'host' => 'localhost',
 			'port' => '',
 			'driver' => 'mysql',
