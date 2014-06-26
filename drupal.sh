@@ -109,9 +109,9 @@ chkconfig httpd on
 service httpd restart >> $INSTDIR/install.log
 
 # Install Apache Boilerplate
-git clone https://github.com/h5bp/server-configs-apache
+git clone https://github.com/h5bp/server-configs-apache >> $INSTDIR/install.log
 cd server-configs-apache
-cat ./.htaccess >> /etc/httpd/conf/httpd.conf
+cat server-configs-apache/src/.htaccess >> /etc/httpd/conf/httpd.conf
 service httpd restart >> $INSTDIR/install.log
 
 echo ""
