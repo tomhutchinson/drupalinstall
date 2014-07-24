@@ -41,7 +41,7 @@ echo "WARNING - This script assumes that you have a new or non-existing install 
 echo "If you specify a database name that already exists, IT WILL BE DROPPED!  You have been warned!"
 echo ""
 
-default_install="/var/www/html"
+default_install="/var/www/drupal"
 if [ "$1" != "-s" ] && [ "$1" != "-n" ]; then
 	read -p "Enter the directory that you want to install Drupal to [$default_install]: " REPLY0
 fi
@@ -124,6 +124,11 @@ git clone http://git.drupal.org/project/drupal.git $REPLY0 -q >> $INSTDIR/instal
 cd $REPLY0
 git checkout $REPLY1 -q >> $INSTDIR/install.log
 
+# Create 
+mkdir $REPLY0/sites/all/modules/contrib
+mkdir $REPLY0/sites/all/modules/features
+mkdir $REPLY0/sites/all/modules/org
+
 # Create new user to own the Drupal install
 useradd drupal
 chown -R drupal:drupal $REPLY0
@@ -134,7 +139,7 @@ chmod -R 755 $REPLY0/sites/all/modules
 chmod -R 755 $REPLY0/sites/all/themes
 
 # Backup existing database, Create database
-# Note - skip the backup for now, it creates a confuing error message
+# Note - skip the backup for now, it creates a confusing error message
 # mysqldump -f -u root $REPLY3 >> $INSTDIR/existing_db_dump.sql
 mysqladmin -u root create $REPLY3 >> $INSTDIR/install.log
 
@@ -186,7 +191,7 @@ done
 # Add Apache VirtualHost for new install
 /bin/sed -i 's@DOCROOT@'$REPLY0'@g' $INSTDIR/vhost.inc
 /bin/sed -i 's@HOSTNAME@'$REPLY2'@g' $INSTDIR/vhost.inc
-cat $INSTDIR/vhost.inc >> /etc/httpd/conf/httpd.conf
+cat $INSTDIR/vhost.inc >> /etc/httpd/conf.d/drupal.conf
 service httpd restart >> $INSTDIR/install.log
 
 echo ""
@@ -201,6 +206,8 @@ drush dl -q -y flood_control >> $INSTDIR/install.log
 drush en -q -y flood_control >> $INSTDIR/install.log
 drush dl -q -y hacked >> $INSTDIR/install.log
 drush en -q -y hacked >> $INSTDIR/install.log
+drush dl -q -y jquery_update >> $INSTDIR/install.log
+drush en -q -y jquery_update >> $INSTDIR/install.log
 
 # Install modules - Other
 cd $REPLY0
@@ -212,8 +219,16 @@ drush dl -q -y module_filter >> $INSTDIR/install.log
 drush en -q -y module_filter >> $INSTDIR/install.log
 drush dl -q -y pathauto >> $INSTDIR/install.log
 drush en -q -y pathauto >> $INSTDIR/install.log
+drush dl -q -y file_entity >> $INSTDIR/install.log
+drush en -q -y file_entity >> $INSTDIR/install.log
 drush dl -q -y site_audit >> $INSTDIR/install.log
 
+# Disable overlays
+drush dis overlay
+
+# Todo
+#CKeditor wysiwyg setup
+#Remove copyright and maintainer files
 
 # Done, give feedback
 echo ""
