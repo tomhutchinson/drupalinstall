@@ -110,7 +110,6 @@ service httpd restart >> $INSTDIR/install.log
 
 # Install Apache Boilerplate
 git clone https://github.com/h5bp/server-configs-apache >> $INSTDIR/install.log
-cd server-configs-apache
 cat server-configs-apache/src/.htaccess >> /etc/httpd/conf/httpd.conf
 service httpd restart >> $INSTDIR/install.log
 
@@ -238,5 +237,5 @@ echo "!!!!! IMPORTANT !!!!!"
 echo "Your MySQL installation is currently INSECURE!"
 echo "Be sure to run /usr/bin/mysql_secure_installation to set a MySQL root password and remove the Test database."
 echo ""
-echo "You can log into your new Drupal installation at http://localhost with admin/admin."
+echo "You can log into your new Drupal installation at http://$REPLY2 with admin/admin."
 echo ""
