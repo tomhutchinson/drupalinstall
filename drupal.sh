@@ -123,7 +123,7 @@ git clone http://git.drupal.org/project/drupal.git $REPLY0 -q >> $INSTDIR/instal
 cd $REPLY0
 git checkout $REPLY1 -q >> $INSTDIR/install.log
 
-# Create 
+# Create contrib, features, and organization module folders
 mkdir $REPLY0/sites/all/modules/contrib
 mkdir $REPLY0/sites/all/modules/features
 mkdir $REPLY0/sites/all/modules/org
@@ -199,28 +199,20 @@ echo ""
 
 # Install modules - Security
 cd $REPLY0
-drush dl -q -y security_review >> $INSTDIR/install.log
 drush en -q -y security_review >> $INSTDIR/install.log
-drush dl -q -y flood_control >> $INSTDIR/install.log
 drush en -q -y flood_control >> $INSTDIR/install.log
-drush dl -q -y hacked >> $INSTDIR/install.log
 drush en -q -y hacked >> $INSTDIR/install.log
-drush dl -q -y jquery_update >> $INSTDIR/install.log
 drush en -q -y jquery_update >> $INSTDIR/install.log
 
 # Install modules - Other
 cd $REPLY0
-drush dl -q -y views >> $INSTDIR/install.log
 drush en -q -y views >> $INSTDIR/install.log
-drush dl -q -y features >> $INSTDIR/install.log
 drush en -q -y features >> $INSTDIR/install.log
-drush dl -q -y module_filter >> $INSTDIR/install.log
 drush en -q -y module_filter >> $INSTDIR/install.log
-drush dl -q -y pathauto >> $INSTDIR/install.log
 drush en -q -y pathauto >> $INSTDIR/install.log
-drush dl -q -y file_entity >> $INSTDIR/install.log
 drush en -q -y file_entity >> $INSTDIR/install.log
 drush dl -q -y site_audit >> $INSTDIR/install.log
+drush dis -q -y toolbar >> $INSTDIR/install.log
 
 # Disable overlays
 drush dis overlay
