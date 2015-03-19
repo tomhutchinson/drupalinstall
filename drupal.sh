@@ -3,7 +3,7 @@
 # Script help
 if [ "$1" == "-h" ]; then
 	echo ""
-	echo "SSRI Drupal installation and setup script"
+	echo "Drupal installation and setup script"
 	echo ""
 	echo "Interactive install: drupal.sh"
 	echo "Non-interactive install: drupal.sh -n [install directory] [Drupal version] [DNS hostname] [database name]"
@@ -49,7 +49,7 @@ fi
 echo "Will install Drupal to directory: $REPLY0"
 
 echo ""
-default_version="7.28"
+default_version="7.35"
 if [ "$1" != "-s" ] && [ "$1" != "-n" ]; then
 	read -p "Enter the Drupal version number you want to install [$default_version]: " REPLY1
 fi
@@ -177,7 +177,7 @@ echo ""
 while :
 do
 	if [ "$1" != "-s" ] && [ "$1" != "-n" ]; then
-		read -p "Enter an OS user that should have access to Drush commands, or DONE when finished: " REPLY4
+		read -p "Enter an existing OS user that should have access to Drush commands, or DONE when finished: " REPLY4
 	fi
 	if  [ $REPLY4 == 'DONE' ]
 		then
